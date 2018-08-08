@@ -2383,7 +2383,26 @@ add or remove geometries.
   ['POINT (1 1)', 'POINT (2 2)', 'POINT (3 3)']
   >>> [o.wkt for o in tree.query(query_geom) if o.intersects(query_geom)]
   ['POINT (2 2)']
+  
+.. note::
 
+   STRtree does not allow the storage of e.g. a list index number referencing the
+   position of the geometry-to-be-added in a list, along-side the geometry objects
+   like the `rtree`_ module would do. You can however, as a workaround, use
+   `monkey patching`_ to add attributes to the geometry objects themselves before
+   adding them to the STRtree.
+   
+      >>> from copy import deepcopy
+      >>> points_numbered = []
+      >>> for i, point in enumerate(points):
+      >>>     point = deepcopy(point)  # let's not mutate the originals
+      >>>     point.i = i
+      >>>     points_numbered.append(point)
+      >>> tree = STRtree(points_numbered)
+      >>> result = tree.query(query_geometry)
+      >>> [(o.i, o.wkt) for o in result]
+      [(1, 'POINT (1 1)'), (2, 'POINT (2 2)'), (3, 'POINT (3 3)')]
+      
 Interoperation
 ==============
 
@@ -2658,6 +2677,8 @@ References
 .. _JTS: https://projects.eclipse.org/projects/locationtech.jts
 .. _PostGIS: http://postgis.refractions.net
 .. _record: https://pypi.org/project/Shapely/
+:: _rtree: http://toblerity.org/rtree/
+:: _monkey patching: https://en.wikipedia.org/wiki/Monkey_patch
 .. _Open Geospatial Consortium: http://www.opengeospatial.org/
 .. _Davis: https://lin-ear-th-inking.blogspot.com/2007/06/subtleties-of-ogc-covers-spatial.html
 .. _Understanding spatial relations: http://edndoc.esri.com/arcsde/9.1/general_topics/understand_spatial_relations.htm
